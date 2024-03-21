@@ -11,7 +11,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { RouterLink } from 'vue-router';
 
 const footerItems = ["Aumet Inc", " | ", "2024 © All Rights Reserved"];
