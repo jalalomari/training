@@ -3,12 +3,12 @@
     <div class="p-12 border border-gray-200 bg-white">
       <!-- form input binding v-model / template refs-->
       <form ref="loginForm" @submit.prevent="login">
-        <div class="text-left mb-12">
-          <h1 class="fw-boldest fs-2qx mb-3 text-primary">Sign In</h1>
+        <div class="text-left mb-0">
+          <PropsLogin pageTitle="Login" pageDescription="Welcome" />  <!-- Props -->
         </div>
         <div class="fv-row mb-7">
           <label for="email" class="form-label fs-6 fw-normal text-dark">Email</label>
-          <input v-model="username" id="email" type="email" required  autocomplete="off"
+          <input v-model="username" id="email" type="email" autocomplete="off"
             class="form-control bg-white form-control-lg min-h-sm-45px min-h-35px"
             :class="{ 'border-danger': errors.username }" />
             <label v-if="showInputLabel" class="text-sm text-gray-500">Typing...</label>
@@ -34,11 +34,11 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import Swal from 'sweetalert2';
-import { ref, onMounted, watch,watchEffect } from 'vue';
+import { ref, onMounted, watch, watchEffect, defineEmits } from 'vue';
 import { useRouter } from 'vue-router';
+import PropsLogin from '@/views/PropsLogin.vue';
 
 const router = useRouter(); 
 const loginForm = ref(null);
@@ -47,6 +47,9 @@ const password = ref('');
 const errors = ref({ username: '', password: '' });
 const errorMessage = ref('');
 const showInputLabel = ref(false);
+
+// events emit
+const emits = defineEmits(['loginSuccess']);
 
 // lifecycle hook: mounted
 onMounted(() => {
@@ -67,57 +70,82 @@ watchEffect(() => {
     return () => clearTimeout(timer);
   }
 });
-//form validation - event handling
-async function login() {
-  clearErrors();
-  if (!username.value.trim()) {
-    errors.value.username = 'The email field is required';
-  }
-  if (!password.value.trim()) {
-    errors.value.password = 'The password field is required';
-  } else if (password.value.trim().length < 6) {
-    errors.value.password = 'The password must be at least 6 characters';
-  }
-  if (!errors.value.username && !errors.value.password) {
-    try {
-      const response = await simulatedLoginApi(username.value, password.value);
-      loginResponse(response);
-    } catch (error) {
-      showErrorAlert('Invalid credentials');
+
+//form validation - Promise(resolve, reject)
+function login() {
+  return new Promise((resolve, reject) => {
+    clearErrors();
+    if (!username.value.trim()) {
+      errors.value.username = 'The email field is required';
+      reject(errors.value.username);
+      return; 
     }
-  }
-}
-// simulated server-side validation
-function simulatedLoginApi(username, password) {
-  return new Promise((resolve) => {
-    if (username === 'demo@example.com' && password === 'demo123') {
-      resolve({ data: true });
-    } else {
-      resolve({ data: false });
+    if (!password.value.trim()) {
+      errors.value.password = 'The password field is required';
+      reject(errors.value.password);
+      return; 
     }
+    if (password.value.trim().length < 6) {
+      errors.value.password = 'The password must be at least 6 characters';
+      reject(errors.value.password);
+      return; 
+    }
+    fetch('https://4d00e099-79e7-49c2-95db-db717a3a036f.mock.pstmn.io/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to login. Please try again later.');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.username === username.value && data.password === password.value) {
+        showSuccessAlert('Logged in successfully');
+        // Emit
+        emits('loginSuccess');
+        router.push('/home');
+        resolve(data);
+      } else {
+        showErrorAlert('Invalid credentials');
+        reject('Invalid credentials');
+      }
+    })
+    .catch(error => {
+      showErrorAlert(error.message || 'Failed to login. Please try again later.');
+      reject(error);
+    });
+  })
+  .catch(error => {
+    showErrorAlert(error.message || 'Failed to login. Please try again later.');
   });
 }
 function clearErrors() {
   errors.value = { username: '', password: '' };
   errorMessage.value = '';
 }
-
-function loginResponse(response) {
-  if (response.data) {
-    showSuccessAlert('Logged in successfully');
-    router.push('/home'); 
-  } else {
-    showErrorAlert('Invalid credentials');
-  }
-}
+// simulated server-side validation
+// function simulatedLoginApi(username, password) {
+//   return new Promise((resolve) => {
+//     if (username === 'demo@example.com' && password === 'demo123') {
+//       resolve({ data: true });
+//     } else {
+//       resolve({ data: false });
+//     }
+//   });
+// }
 //event handling
-function showSuccessAlert(message) {
-  Swal.fire({toast: true,timer: 1000,position: 'top-end',timerProgressBar: true,title: message,icon: 'success',showConfirmButton: false,showCloseButton: true
-  });
+function showSuccessAlert(message) { 
+  Swal.fire({ toast: true, timer: 1000, position: 'top-end', timerProgressBar: true, title: message, icon: 'success', showConfirmButton: false, showCloseButton: true });
 }
-
-function showErrorAlert(message) {
-  Swal.fire({title: message,icon: 'error',customClass: { confirmButton: 'btn btn-primary' }
-  });
+function showErrorAlert(message) { 
+  Swal.fire({ title: message, icon: 'error', customClass: { confirmButton: 'btn btn-primary' } });
 }
 </script>

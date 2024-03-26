@@ -1,13 +1,18 @@
 <template>
-    <div class="content d-flex flex-column flex-column-fluid pt-0 px-8">
-     <div class="card p-4 mt-3">
-        <h1>About</h1>
-     </div>
-    </div>
-  </template>
-  <script setup>
-  </script>
-  <style scoped>
-  
-  </style>
-  
+   <div class="px-8">
+     <!-- provide values -->
+     <PageContent :pageTitle="pageTitle" :pageDescription="pageDescription" />
+   </div>
+ </template>
+ 
+ <script setup>
+ import PageContent from '@/views/PageContent.vue';
+ import { provide } from 'vue';
+ 
+ const pageTitle = 'About';
+ const pageDescription = 'This is the About page.';
+ 
+ provide('pageTitle', pageTitle);
+ provide('pageDescription', pageDescription);
+ </script>
+ 
