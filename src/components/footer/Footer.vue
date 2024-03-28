@@ -1,4 +1,4 @@
-<template>
+<template  #footer>
   <div class="footer py-4 position-fixed w-100 bottom-0">
     <div class="container-fluid d-flex px-2">
       <div class="text-dark order-2 order-md-1 mx-1">

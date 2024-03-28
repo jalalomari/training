@@ -1,4 +1,4 @@
-<template>
+<template  #header>
     <div class="header align-items-stretch px-10 bg-white">
         <div class="d-flex align-items-stretch justify-content-between flex-md-grow-1">
             <div>

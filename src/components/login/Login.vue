@@ -2,7 +2,7 @@
   <div class="mx-auto my-10 w-50">
     <div class="p-12 border border-gray-200 bg-white">
       <!-- form input binding v-model / template refs-->
-      <form ref="loginForm" @submit.prevent="login">
+      <form ref="loginForm" @submit.prevent="login" v-bind="$attrs">
         <div class="text-left mb-0">
           <PropsLogin pageTitle="Login" pageDescription="Welcome" />  <!-- Props -->
         </div>
@@ -26,10 +26,10 @@
         <div v-if="errorMessage" class="alert alert-danger mt-3" role="alert">
           {{ errorMessage }}
         </div>
+        <ButtonTemp v-bind="$attrs" :disabled="!username.trim() || !password.trim()">  <!-- Attribute --> 
+          Sign In <!-- slot content -->
+        </ButtonTemp>
 
-        <button type="submit" class="btn btn-lg btn-primary mb-6 w-100">
-          <span class="indicator-label fs-3">sign in</span>
-        </button>
       </form>
     </div>
   </div>
@@ -39,6 +39,7 @@ import Swal from 'sweetalert2';
 import { ref, onMounted, watch, watchEffect, defineEmits } from 'vue';
 import { useRouter } from 'vue-router';
 import PropsLogin from '@/views/PropsLogin.vue';
+import ButtonTemp from '@/components/buttons/Button.vue';
 
 const router = useRouter(); 
 const loginForm = ref(null);
